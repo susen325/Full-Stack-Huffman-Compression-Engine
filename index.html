@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Huffman Secure Engine</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 50px; }
+        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 400px; margin-bottom: 20px; }
+        input, button { width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; }
+        button { background: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 5px; }
+        #status { font-weight: bold; color: #333; margin-top: 10px; text-align: center; }
+        
+        /* Simple styling for the radio buttons */
+        .radio-group { display: flex; justify-content: space-around; margin: 10px 0; }
+        .radio-group label { cursor: pointer; font-weight: bold; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>📄 Compress Single File</h2>
+        <form action="/compress" method="POST" enctype="multipart/form-data">
+            <input type="file" name="files" required>
+            
+            <div class="radio-group">
+                <label><input type="radio" name="format" value="zip" checked> Output .zip</label>
+                <label><input type="radio" name="format" value="huff"> Output .huff</label>
+            </div>
+
+            <input type="password" name="password" placeholder="Password (Optional)">
+            <button type="submit">Compress File</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>📁 Compress Folder</h2>
+        <form id="folderForm" onsubmit="uploadFolder(event)">
+            <input type="file" id="folderInput" webkitdirectory directory multiple required>
+            
+            <div class="radio-group">
+                <label><input type="radio" name="folderFormat" id="formatZip" value="zip" checked> Output .zip</label>
+                <label><input type="radio" name="folderFormat" id="formatHuff" value="huff"> Output .huff</label>
+            </div>
+
+            <input type="password" id="folderPassword" placeholder="Password (Optional)">
+            <button type="submit" style="background:#007bff">Compress Folder</button>
+        </form>
+        <div id="status"></div>
+    </div>
+
+    <div class="card">
+        <h2>🔓 Decompress</h2>
+        <form action="/decompress" method="POST" enctype="multipart/form-data">
+            <input type="file" name="files" accept=".zip,.huff" required>
+            <input type="password" name="password" placeholder="Password (Optional)">
+            <button type="submit" style="background:#dc3545">Restore Original</button>
+        </form>
+    </div>
+
+    <script>
+        async function uploadFolder(event) {
+            event.preventDefault();
+            const input = document.getElementById('folderInput');
+            const status = document.getElementById('status');
+            
+            if (input.files.length === 0) return;
+            status.innerText = "⚡ Zipping folder... please wait.";
+
+            const formData = new FormData();
+            
+            const rootFolderName = input.files[0].webkitRelativePath.split('/')[0];
+            formData.append('folderName', rootFolderName);
+            formData.append('password', document.getElementById('folderPassword').value);
+            
+            // 🌟 ADDED: Grab the chosen format for folders
+            const format = document.getElementById('formatZip').checked ? 'zip' : 'huff';
+            formData.append('format', format);
+
+            for (const file of input.files) {
+                formData.append('files', file, file.webkitRelativePath);
+            }
+
+            try {
+                const response = await fetch('/compress', { method: 'POST', body: formData });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    
+                    // 🌟 UPDATED: Download as .zip or .huff
+                    a.download = `${rootFolderName}_compressed.${format}`; 
+                    
+                    document.body.appendChild(a);
+                    a.click();
+                    status.innerText = "✅ Folder Compressed!";
+                } else {
+                    status.innerText = "❌ Compression Failed.";
+                }
+            } catch (err) {
+                status.innerText = "❌ Server Error.";
+            }
+        }
+    </script>
+</body>
+</html>
