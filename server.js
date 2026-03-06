@@ -19,7 +19,7 @@ app.post('/compress', upload.array('files'), async (req, res) => {
     if (!req.files || req.files.length === 0) return res.status(400).send("No files uploaded.");
 
     const password = req.body.password || "";
-    const format = req.body.format || "zip"; // 🌟 GRAB FORMAT (.zip or .huff)
+    const format = req.body.format || "zip"; 
     
     const hasSlashes = /[/\\]/.test(req.files[0].originalname);
     const hasMultipleFiles = req.files.length > 1;
@@ -27,15 +27,12 @@ app.post('/compress', upload.array('files'), async (req, res) => {
     const isFolder = hasMultipleFiles || hasSlashes || hasFolderNameField;
 
     let downloadName;
-
     if (isFolder) {
-        let folderName = "archive";
-        if (hasFolderNameField) folderName = req.body.folderName;
-        else if (hasSlashes) folderName = req.files[0].originalname.split(/[/\\]/)[0];
-        downloadName = `${folderName}_compressed.${format}`; // 🌟 APPLY FORMAT
+        let folderName = req.body.folderName || "archive";
+        downloadName = `${folderName}_compressed.${format}`;
     } else {
         let fileName = path.parse(req.files[0].originalname).name;
-        downloadName = `${fileName}.${format}`; // 🌟 APPLY FORMAT
+        downloadName = `${fileName}.${format}`;
     }
 
     const tarPath = path.join('uploads', `bundle_${Date.now()}.tar`);
@@ -49,15 +46,17 @@ app.post('/compress', upload.array('files'), async (req, res) => {
     });
     
     output.on('close', () => {
-        const outputEncrypted = `${tarPath}.${format}`; // 🌟 APPLY FORMAT TO OUTPUT
-        
-        // 🌟 Absolute path fallback just in case
+        const outputEncrypted = `${tarPath}.${format}`;
         const exePath = path.join(__dirname, 'huffman.exe');
+        
+        // 🌟 FIX: Quoted paths to handle spaces
         const cmd = `"${exePath}" -c "${tarPath}" "${outputEncrypted}" "${password}"`;
 
         exec(cmd, (err) => {
-            if (err) return res.status(500).send("C++ Compression Error");
-            
+            if (err) {
+                cleanup([tarPath], []);
+                return res.status(500).send("C++ Compression Error");
+            }
             res.download(outputEncrypted, downloadName, () => {
                 cleanup([tarPath, outputEncrypted, ...req.files.map(f => f.path)], []);
             });
@@ -71,20 +70,32 @@ app.post('/compress', upload.array('files'), async (req, res) => {
 app.post('/decompress', upload.single('files'), (req, res) => {
     if (!req.file) return res.status(400).send("No file uploaded.");
 
-    const zipPath = path.join('uploads', req.file.originalname);
+    // 🌟 FIX: Use a safe temp name to avoid command line injection/errors with originalname
+    const safeTempName = `temp_${Date.now()}_${req.file.originalname.replace(/\s+/g, '_')}`;
+    const zipPath = path.join('uploads', safeTempName);
     const tarPath = path.join('uploads', `restored_${Date.now()}.tar`);
     const password = req.body.password || "";
 
     fs.renameSync(req.file.path, zipPath);
 
     const exePath = path.join(__dirname, 'huffman.exe');
-    const cmd = `"${exePath}" -d "${zipPath}" "${tarPath}" "${password}"`;
     
-    exec(cmd, (err) => {
-        if (err) return res.status(500).send("Decompression Error: Check Password.");
+    // 🌟 FIX: Properly wrap password and paths
+    const pwdArg = password ? `"${password}"` : '""';
+    const cmd = `"${exePath}" -d "${zipPath}" "${tarPath}" ${pwdArg}`;
+    
+    console.log("Executing:", cmd);
+
+    // Timeout set to 5 seconds to catch infinite loops on bad passwords
+    exec(cmd, { timeout: 5000 }, (err) => {
+        if (err) {
+            console.error("❌ Decompression failed (likely bad password or timeout).");
+            cleanup([zipPath, tarPath], []); 
+            return res.status(401).send("Wrong Password!"); 
+        }
 
         const extractDir = path.join('uploads', `extracted_${Date.now()}`);
-        fs.mkdirSync(extractDir);
+        if (!fs.existsSync(extractDir)) fs.mkdirSync(extractDir);
         
         try {
             tar.x({ file: tarPath, cwd: extractDir, sync: true });
@@ -106,13 +117,8 @@ app.post('/decompress', upload.single('files'), (req, res) => {
                 archive.pipe(output);
                 archive.directory(extractDir, false);
                 
-                let finalDownloadName = req.file.originalname.replace('_compressed', '');
-                
-                // Fix names if restoring from .huff
-                finalDownloadName = finalDownloadName.replace('.huff', '.zip');
-                if (!finalDownloadName.endsWith('.zip')) {
-                    finalDownloadName += '.zip';
-                }
+                let finalDownloadName = req.file.originalname.replace('_compressed', '').replace('.huff', '').replace('.zip', '');
+                finalDownloadName += ".zip";
 
                 output.on('close', () => {
                     res.download(finalZip, finalDownloadName, () => {
@@ -122,10 +128,9 @@ app.post('/decompress', upload.single('files'), (req, res) => {
                 archive.finalize();
             }
         } catch (e) { 
-            let fallbackName = req.file.originalname.replace('_compressed', '').replace('.zip', '').replace('.huff', '');
-            res.download(tarPath, fallbackName, () => {
-                cleanup([zipPath, tarPath], [extractDir]);
-            });
+            console.error("Tar error:", e);
+            res.status(500).send("Restoration Error");
+            cleanup([zipPath, tarPath], [extractDir]);
         }
     });
 });
