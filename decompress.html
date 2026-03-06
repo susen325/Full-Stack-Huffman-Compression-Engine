@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Decompress</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <a href="index.html" class="back-btn">← Back</a>
+        <h2>Decompression</h2>
+        <form id="decompForm">
+            <label for="fileInput" class="custom-file-label" id="fileLabel">Select .zip or .huff</label>
+            <input type="file" id="fileInput" accept=".zip,.huff" required>
+            <input type="password" id="password" placeholder="Password">
+            <button type="submit" class="submit-btn danger">Decompress</button>
+        </form>
+        <div id="status" class="status-box"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
