@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Secrets
+.env
+
+# Compiled C++ Binaries
+*.exe
+*.out
+*.o
+
+# Database and Uploads
+database.db
+uploads/

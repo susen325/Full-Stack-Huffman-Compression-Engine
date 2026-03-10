@@ -2,25 +2,73 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Huffman Engine | Home</title>
+    <title>COM&D | Huffman Engine</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
-        <h1>Huffman Secure Engine</h1>
-        <p class="subtitle">Choose an action</p>
-        <div class="grid-cards">
+     <header class="top-header">
+        <h1>COM&D Huffman Engine</h1>
+    </header>
+
+    <main class="main-content">
+        <h2 id="userGreeting" class="greeting">Welcome, Guest!</h2>
+        <p class="subtitle">Fast, secure file compression powered by C++.</p>
+
+        <div class="card-container">
             <a href="compress.html" class="action-card">
                 <div class="icon">🗜️</div>
                 <h3>Compress</h3>
-                <p>Shrink files/folders into .zip or .huff</p>
+                <p>Shrink files instantly.</p>
             </a>
+            
             <a href="decompress.html" class="action-card">
                 <div class="icon">🔓</div>
                 <h3>Decompress</h3>
-                <p>Restore original data</p>
+                <p>Restore original data.</p>
+            </a>
+
+            <a href="login.html" class="action-card auth-card" id="authCard">
+                <div class="icon" id="authIcon">🔑</div>
+                <h3 id="authTitle">Login</h3>
+                <p id="authDesc">Access history & settings.</p>
             </a>
         </div>
-    </div>
+    </main>
+
+    <script>
+        async function loadUserInfo() {
+            const userGreeting = document.getElementById('userGreeting');
+            const authCard = document.getElementById('authCard');
+            const authIcon = document.getElementById('authIcon');
+            const authTitle = document.getElementById('authTitle');
+            const authDesc = document.getElementById('authDesc');
+
+            try {
+                const res = await fetch('/user-info');
+                if (res.ok) {
+                    const data = await res.json();
+                    userGreeting.innerText = "Welcome back, " + data.username + "!";
+                    
+                    authCard.href = "history.html";
+                    authCard.style.borderColor = "#2563eb"; 
+                    authIcon.innerText = "📜";
+                    authTitle.innerText = "Dashboard";
+                    authDesc.innerText = "View history & manage account.";
+                }
+            } catch (err) { 
+                console.error("Auth check failed"); 
+            }
+        }
+        window.onload = loadUserInfo;
+    </script>
+    
+    <footer class="bg-primary text-white text-center py-3">
+        <p>&copy; 2026 COM&D. All rights reserved.</p>
+         <div style="width: 80px; text-align: left;">
+            <a href="about.html" style="display: inline-block; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 2px; text-decoration: none; color: #475569; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'">
+                ℹ️ About
+            </a>
+        </div>
+    </footer>
 </body>
 </html>

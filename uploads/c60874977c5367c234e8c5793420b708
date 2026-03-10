@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Compress</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <a href="index.html" class="back-btn">← Back</a>
+        <h2>Compression</h2>
+        <div class="toggle-group">
+            <label class="toggle-option"><input type="radio" name="compType" value="file" checked onchange="updateMode()"><span>File</span></label>
+            <label class="toggle-option"><input type="radio" name="compType" value="folder" onchange="updateMode()"><span>Folder</span></label>
+        </div>
+        <form id="compForm">
+            <label for="fileInput" class="custom-file-label" id="fileLabel">Select File</label>
+            <input type="file" id="fileInput" required>
+            <div class="format-group">
+                <label><input type="radio" name="format" value="zip" checked> .zip</label>
+                <label><input type="radio" name="format" value="huff"> .huff</label>
+            </div>
+            <input type="password" id="password" placeholder="Password (Optional)">
+            <button type="submit" class="submit-btn primary">Compress</button>
+        </form>
+        <div id="status" class="status-box"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

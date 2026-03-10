@@ -4,8 +4,16 @@
     <meta charset="UTF-8">
     <title>Compress</title>
     <link rel="stylesheet" href="style.css">
+    
+    <meta charset="UTF-8">
+    <title>COM&D | Huffman Engine</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+    <header class="top-header">
+        <h1>COM&D Huffman Engine</h1>
+    </header>
     <div class="app-container">
         <a href="index.html" class="back-btn">← Back</a>
         <h2>Compression</h2>
@@ -21,10 +29,21 @@
                 <label><input type="radio" name="format" value="huff"> .huff</label>
             </div>
             <input type="password" id="password" placeholder="Password (Optional)">
-            <button type="submit" class="submit-btn primary">Compress</button>
+           <button type="submit" id="submitBtn" class="submit-btn primary">
+                 <div id="spinner" class="spinner"></div>
+                 <span id="btnText">Compress Now</span>
+            </button>
         </form>
         <div id="status" class="status-box"></div>
     </div>
     <script src="script.js"></script>
+     <footer class="bg-primary text-white text-center py-3">
+        <p>&copy; 2026 COM&D. All rights reserved.</p>
+         <div style="width: 80px; text-align: left;">
+            <a href="about.html" style="display: inline-block; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 2px; text-decoration: none; color: #475569; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'">
+                ℹ️ About
+            </a>
+        </div>
+    </footer>
 </body>
 </html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>COM&D | User Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="top-header">
+        <h1>COM&D Huffman Engine</h1>
+    </header>
+
+    <div class="app-container" style="max-width: 400px; margin: 50px auto; padding: 30px; padding-bottom: 80px; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+        <a href="index.html" class="back-btn">← Back</a>
+        <h2 style="text-align: center; margin-bottom: 25px; color: #1e293b;">User Login</h2>
+        
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;" required>
+            
+            <input type="password" id="password" placeholder="Password" style="width: 100%; padding: 12px; margin-bottom: 5px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;" required>
+        
+            <div style="text-align: right; margin-bottom: 20px;">
+                <a href="forgot.html" style="font-size: 0.85rem; color: #64748b; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#64748b'">
+                    Forgot Password?
+                </a>
+            </div>
+
+            <button type="submit" class="submit-btn primary" style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+                Login
+            </button>
+        </form> <div style="margin-top: 25px; text-align: center; font-size: 0.9rem; color: #64748b;">
+            Don't have an account? 
+            <a href="register.html" style="color: #2563eb; text-decoration: none; font-weight: bold;">Register here</a>
+        </div>
+
+        <div id="status" class="status-box" style="margin-top: 15px; text-align: center;"></div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault(); // Stops page reload
+            const statusBox = document.getElementById('status');
+            statusBox.innerText = "Authenticating...";
+            statusBox.style.color = "#64748b";
+
+            const formData = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const res = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (res.ok) {
+                    window.location.href = 'index.html'; // Success!
+                } else {
+                    statusBox.innerText = await res.text();
+                    statusBox.style.color = "red";
+                }
+            } catch (err) {
+                statusBox.innerText = "Server connection failed.";
+                statusBox.style.color = "red";
+            }
+        };
+    </script>
+    
+     <footer class="bg-primary text-white text-center py-3">
+        <p>&copy; 2026 COM&D. All rights reserved.</p>
+         <div style="width: 80px; text-align: left;">
+            <a href="about.html" style="display: inline-block; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 2px; text-decoration: none; color: #475569; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'">
+                ℹ️ About
+            </a>
+        </div>
+    </footer>
+</body>
+</html>

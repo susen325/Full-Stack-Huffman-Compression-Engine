@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reset Password | Huffman Engine</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .forgot-container { max-width: 400px; margin: 50px auto; padding: 30px; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="forgot-container">
+        <h2>Reset Password</h2>
+        <p id="instruction" style="color: #64748b; font-size: 0.9rem;">Enter your email to receive a reset code.</p>
+
+        <div id="step1">
+            <input type="email" id="emailInput" placeholder="Enter registered email">
+            <button onclick="requestReset()" class="submit-btn primary" style="width: 100%;">Send Code</button>
+        </div>
+
+        <div id="step2" class="hidden">
+            <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6">
+            <input type="password" id="newPass" placeholder="New Password">
+            <button onclick="resetPassword()" class="submit-btn primary" style="width: 100%;">Update Password</button>
+        </div>
+
+        <div id="status" class="status-box" style="margin-top: 15px;"></div>
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="login.html" style="font-size: 0.85rem; color: #64748b; text-decoration: none;">← Back to Login</a>
+        </div>
+    </div>
+
+    <script>
+        const status = document.getElementById('status');
+
+        async function requestReset() {
+            const email = document.getElementById('emailInput').value;
+            const res = await fetch('/request-password-reset', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+
+            if (res.ok) {
+                document.getElementById('step1').classList.add('hidden');
+                document.getElementById('step2').classList.remove('hidden');
+                document.getElementById('instruction').innerText = "Code sent! Check your inbox.";
+                status.innerText = "";
+            } else {
+                status.innerText = await res.text();
+                status.style.color = "red";
+            }
+        }
+
+        async function resetPassword() {
+            const email = document.getElementById('emailInput').value;
+            const otp = document.getElementById('otpInput').value;
+            const newPassword = document.getElementById('newPass').value;
+
+            const res = await fetch('/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp, newPassword })
+            });
+
+            if (res.ok) {
+                alert("Password updated successfully! Redirecting to login...");
+                window.location.href = 'login.html';
+            } else {
+                status.innerText = await res.text();
+                status.style.color = "red";
+            }
+        }
+    </script>
+</body>
+</html>

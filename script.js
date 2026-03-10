@@ -1,6 +1,7 @@
 const fileInput = document.getElementById('fileInput');
 const fileLabel = document.getElementById('fileLabel');
 
+// --- 1. UI UPDATES ---
 if (fileInput) {
     fileInput.onchange = () => {
         if (fileInput.files.length > 0) {
@@ -27,11 +28,20 @@ function updateMode() {
     fileInput.value = '';
 }
 
+// --- 2. ENGINE HANDSHAKE (COMPRESS/DECOMPRESS) ---
 async function handleAction(event, route) {
     event.preventDefault();
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const spinner = document.getElementById('spinner');
     const status = document.getElementById('status');
-    status.innerText = "Processing...";
-    status.style.color = "blue";
+
+    // 1. Enter Loading State
+    submitBtn.classList.add('btn-loading');
+    spinner.style.display = 'block';
+    btnText.innerText = "Processing...";
+    status.innerText = "Engine is running, please wait...";
 
     const formData = new FormData();
     const password = document.getElementById('password').value;
@@ -80,9 +90,54 @@ async function handleAction(event, route) {
     } catch (err) {
         status.innerText = "Error encountered.";
         status.style.color = "red";
+    }finally {
+        // 3. Reset Button State
+        submitBtn.classList.remove('btn-loading');
+        spinner.style.display = 'none';
+        btnText.innerText = route === '/compress' ? "Compress Now" : "Decompress Now";
     }
 }
 
+
+
+// --- 3. SQL OTP & HISTORY REVEAL ---
+async function requestOtp() {
+    const res = await fetch('/send-otp', { method: 'POST' });
+    if (res.ok) {
+        document.getElementById('otpModal').style.display = 'block';
+    } else {
+        alert("Failed to initiate security check.");
+    }
+}
+
+async function verifyAndReveal() {
+    const enteredOtp = document.getElementById('otpInput').value;
+    const res = await fetch('/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enteredOtp })
+    });
+
+    if (res.ok) {
+        // Unblur the sensitive SQL data in the table
+        document.querySelectorAll('.pass-cell').forEach(el => {
+            el.classList.remove('pass-hidden');
+            el.style.filter = "none"; 
+        });
+        closeModal();
+    } else {
+        alert("Incorrect or expired code. Please try again.");
+    }
+}
+
+function closeModal() {
+    const modal = document.getElementById('otpModal');
+    if (modal) modal.style.display = 'none';
+    const input = document.getElementById('otpInput');
+    if (input) input.value = '';
+}
+
+// --- 4. EVENT LISTENERS ---
 const compForm = document.getElementById('compForm');
 const decompForm = document.getElementById('decompForm');
 
