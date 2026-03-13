@@ -12,7 +12,8 @@ const nodemailer = require('nodemailer');
 
 require('dotenv').config();
 
-
+// Determine the correct C++ engine command based on the OS
+const engineCmd = process.platform === 'win32' ? 'huffman.exe' : './huffman';
 
 
 const app = express();
@@ -317,7 +318,11 @@ app.post('/compress', upload.array('files'), async (req, res) => {
     output.on('close', () => {
         const outputEncrypted = `${tarPath}.${format}`;
         // Trigger C++ Engine
-        exec(`"huffman.exe" -c "${tarPath}" "${outputEncrypted}" "${password}"`, (err) => {
+        // Trigger C++ Engine using the smart variable
+        // Call C++ Engine using the smart variable with 5 second timeout safety
+    
+        exec(`${engineCmd} -c "${tarPath}" "${outputEncrypted}" "${password}"`, (err) => {
+
             if (err) { cleanup([tarPath], []); return res.status(500).send("C++ Error"); }
             
             // --- SECURITY CHECK: Only save if user is logged in ---
@@ -342,7 +347,7 @@ app.post('/decompress', upload.single('files'), (req, res) => {
     fs.renameSync(req.file.path, zipPath);
 
     // Call C++ Engine with 5 second timeout safety
-    exec(`"huffman.exe" -d "${zipPath}" "${tarPath}" "${req.body.password || ""}"`, { timeout: 5000 }, (err) => {
+    exec(`${engineCmd} -d "${zipPath}" "${tarPath}" "${req.body.password || ""}"`, { timeout: 5000 }, (err) => {
         if (err) { cleanup([zipPath, tarPath]); return res.status(401).send("Wrong Password or Engine Error"); }
         
         const extractDir = path.join('uploads', `extracted_${Date.now()}`);
