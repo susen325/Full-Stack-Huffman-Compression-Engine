@@ -203,8 +203,11 @@ app.post('/request-password-reset', (req, res) => {
                 text: `Use this code to reset your password: ${otp}. It expires in 15 minutes.`
             };
 
-            transporter.sendMail(mailOptions, (mailErr) => {
-                if (mailErr) return res.status(500).send("Failed to send email.");
+          transporter.sendMail(mailOptions, (mailErr) => {
+                if (mailErr) {
+                    console.error("🚨 NODEMAILER CRASH:", mailErr); // <-- THIS IS THE NEW MAGIC LINE
+                    return res.status(500).send("Failed to send email.");
+                }
                 res.send("Success");
             });
         });
