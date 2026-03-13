@@ -9,5 +9,9 @@
     "nodemailer": "^8.0.1",
     "sqlite3": "^5.1.7",
     "tar": "^7.5.10"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "build": "g++ huffman.cpp -o huffman"
   }
 }
