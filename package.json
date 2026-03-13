@@ -12,6 +12,6 @@
   },
   "scripts": {
     "start": "node server.js",
-    "build": "g++ huffman.cpp -o huffman && chmod +x huffman"
+    "build": "g++ main.cpp -o huffman && chmod +x huffman"
   }
 }
