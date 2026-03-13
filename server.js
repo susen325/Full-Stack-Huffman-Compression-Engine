@@ -20,14 +20,31 @@ const engineCmd = process.platform === 'win32' ? 'huffman.exe' : path.join(__dir
 const app = express();
 const port = 3000;
 
-// 1. DATABASE CONNECTION
+/// 1. DATABASE CONNECTION
 const db = new sqlite3.Database('./database.db');
 
-
-
-// --- NEW: AUTO-MIGRATE COLUMNS ---
 db.serialize(() => {
-    // Attempt to add the columns. If they already exist, SQLite will just quietly ignore it.
+    // 1. Auto-create the users table if it is missing
+    db.run(`CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE,
+        password TEXT,
+        email TEXT UNIQUE,
+        otp_code TEXT,
+        otp_expiry TEXT
+    )`);
+
+    // 2. Auto-create the history table if it is missing
+    db.run(`CREATE TABLE IF NOT EXISTS history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        filename TEXT,
+        action TEXT,
+        file_password TEXT,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    // 3. Fallback for older databases (quietly ignore errors if columns already exist)
     db.run(`ALTER TABLE users ADD COLUMN otp_code TEXT`, (err) => {});
     db.run(`ALTER TABLE users ADD COLUMN otp_expiry TEXT`, (err) => {});
 });
@@ -321,8 +338,17 @@ app.post('/compress', upload.array('files'), async (req, res) => {
         // Trigger C++ Engine
         // Trigger C++ Engine using the smart variable
         // Call C++ Engine using the smart variable with 5 second timeout safety
+        // Trigger C++ Engine with absolute path and logging
+
+        exec(`"${engineCmd}" -c "${tarPath}" "${outputEncrypted}" "${password}"`, (err, stdout, stderr) => {
+            if (err) { 
+                console.error("🚨 C++ ENGINE CRASHED:", err);
+                console.error("🚨 STDERR:", stderr);
+                cleanup([tarPath], []); 
+                return res.status(500).send("C++ Error"); 
+            }
     
-        exec(`${engineCmd} -c "${tarPath}" "${outputEncrypted}" "${password}"`, (err) => {
+      //  exec(`${engineCmd} -c "${tarPath}" "${outputEncrypted}" "${password}"`, (err) => {
 
             if (err) { cleanup([tarPath], []); return res.status(500).send("C++ Error"); }
             
@@ -339,7 +365,6 @@ app.post('/compress', upload.array('files'), async (req, res) => {
     });
     await archive.finalize();
 });
-
 app.post('/decompress', upload.single('files'), (req, res) => {
     if (!req.file) return res.status(400).send("No file.");
     
@@ -347,9 +372,14 @@ app.post('/decompress', upload.single('files'), (req, res) => {
     const tarPath = path.join('uploads', `restored_${Date.now()}.tar`);
     fs.renameSync(req.file.path, zipPath);
 
-    // Call C++ Engine with 5 second timeout safety
-    exec(`${engineCmd} -d "${zipPath}" "${tarPath}" "${req.body.password || ""}"`, { timeout: 5000 }, (err) => {
-        if (err) { cleanup([zipPath, tarPath]); return res.status(401).send("Wrong Password or Engine Error"); }
+    // Call C++ Engine with absolute path, 5 second timeout safety, and full error logging
+    exec(`"${engineCmd}" -d "${zipPath}" "${tarPath}" "${req.body.password || ""}"`, { timeout: 5000 }, (err, stdout, stderr) => {
+        if (err) { 
+            console.error("🚨 DECOMPRESSION C++ ENGINE CRASHED:", err);
+            console.error("🚨 STDERR:", stderr);
+            cleanup([zipPath, tarPath], []); 
+            return res.status(401).send("Wrong Password or Engine Error"); 
+        }
         
         const extractDir = path.join('uploads', `extracted_${Date.now()}`);
         fs.mkdirSync(extractDir);
@@ -370,6 +400,7 @@ app.post('/decompress', upload.single('files'), (req, res) => {
                 arch.finalize();
             }
         } catch (e) { 
+            console.error("🚨 EXTRACTION ERROR:", e);
             res.status(500).send("Extraction Error"); 
             cleanup([zipPath, tarPath], [extractDir]); 
         }
