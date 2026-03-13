@@ -62,8 +62,11 @@ const upload = multer({ dest: 'uploads/' });
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
 // 3. EMAIL CONFIGURATION
-   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+// 3. EMAIL CONFIGURATION (Cloud-Optimized)
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Use SSL/TLS
     auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASS
