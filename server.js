@@ -18,7 +18,7 @@ const engineCmd = process.platform === 'win32' ? 'huffman.exe' : path.join(__dir
 
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = 3000;
 
 /// 1. DATABASE CONNECTION
 const db = new sqlite3.Database('./database.db');
@@ -412,6 +412,4 @@ app.post('/decompress', upload.single('files'), (req, res) => {
         }
     });
 });
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server is running on port ${PORT}`);
-});
+app.listen(port, () => console.log(`🚀 Server: http://localhost:${port}`));
