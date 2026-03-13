@@ -13,7 +13,8 @@ const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 // Determine the correct C++ engine command based on the OS
-const engineCmd = process.platform === 'win32' ? 'huffman.exe' : './huffman';
+// This guarantees Railway knows exactly where the file is
+const engineCmd = process.platform === 'win32' ? 'huffman.exe' : path.join(__dirname, 'huffman');
 
 
 const app = express();
