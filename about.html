@@ -20,81 +20,28 @@
         
         <p style="color: #475569; line-height: 1.6;">
            ================================================================================
-HUFFMAN UNIVERSAL COMPRESSOR
+About the Huffman Compression Engine
+The Vision
 ================================================================================
 
-[DESCRIPTION]
-A high-performance C++ compression tool capable of archiving files, folders,
-and binary streams. It supports universal file types (Text, PDF, Video, Images)
-and includes optional password protection.
 
-[COMPILATION]
-This project requires a C++17 compatible compiler (GCC 14.2.0+ recommended).
-Run the following command in your terminal to build the tool:
+The Full-Stack Huffman Compression Engine was built to bridge the gap between low-level algorithmic efficiency and modern web accessibility. While most compression algorithms run quietly in the background of operating systems, this project brings the raw, mathematical power of a native C++ engine directly to the web browser.
 
-    g++ -std=c++17 main.cpp -o huffman
+Under the Hood
+At the core of this platform is a custom-built C++ engine utilizing Huffman Coding, a fundamental algorithm for lossless data compression.
 
-================================================================================
-COMMAND GUIDE
-================================================================================
+The Algorithm: The engine reads an uploaded file, calculates the frequency of every single character, and constructs a minimum-priority binary tree. Characters that appear frequently are assigned ultra-short binary codes, while rare characters receive longer codes, effectively shrinking the overall file size.
 
-1. SINGLE FILE OPERATIONS
-   Best for compressing individual documents, videos, or images.
+The Architecture: The platform features a containerized Node.js backend. When a file is uploaded, the server securely hands it off to the compiled C++ binary executing in a Linux cloud environment. The engine processes the data, generates a .huff archive, and logs the activity in a SQLite database.
 
-   [Compress a File]
-   Usage: ./huffman -c <input_file> <output_file> [password]
-   Example: ./huffman -c "video.mp4" "video.huf"
+Security First
+File integrity and user privacy are prioritized at every step. The platform features strict session management, bcrypt password hashing for user accounts, and integrated Nodemailer OTP (One-Time Password) verification to ensure your file history and encryption passwords remain strictly in your control.
 
-   [Decompress a File]
-   Usage: ./huffman -d <archive_file> <output_file> [password]
-   Example: ./huffman -d "video.huf" "restored.mp4"
+About the Developer
+Developed by Susen Kumar, this project is the culmination of a deep passion for data structures, algorithmic optimization, and full-stack architecture. It represents the exciting challenge of taking theoretical computer science concepts—like tree traversals, priority queues, and bitwise operations—and deploying them as a scalable, cloud-hosted product.
 
----
-
-2. FOLDER OPERATIONS (ARCHIVING)
-   Compresses an entire directory into a single archive file.
-
-   [Compress a Folder]
-   Usage: ./huffman -cf <folder_path> <archive_file> [password]
-   Example: ./huffman -cf "MyProject" "backup.huf"
-
-   [Extract an Archive]
-   Usage: ./huffman -df <archive_file> <output_folder> [password]
-   Example: ./huffman -df "backup.huf" "RestoredProject"
-
-================================================================================
-PASSWORD PROTECTION
-================================================================================
-
-You can secure any file or folder by adding a password at the end of the command.
-The file cannot be decompressed without the exact same password.
-
-[Locking]
-./huffman -c "secret.txt" "locked.huf" "mypassword123"
-
-[Unlocking]
-./huffman -d "locked.huf" "secret.txt" "mypassword123"
-
-(Note: If you use a password to compress, you MUST use it to decompress!)
-
-================================================================================
-IMPORTANT NOTES
-================================================================================
-
-1. FILE PATHS WITH SPACES:
-   Always use quotes if your filename has spaces.
-   Correct: ./huffman -c "My Notes.txt" "notes.huf"
-   Incorrect: ./huffman -c My Notes.txt notes.huf
-
-2. COMPRESSION PERFORMANCE:
-   - Text / Source Code / BMP: Expect 40-60% size reduction.
-   - MP4 / JPG / ZIP / PDF: Expect 0% reduction (these are already compressed).
-     The tool will still archive and encrypt them safely.
-
-3. MATCHING COMMANDS:
-   - Use '-d' only for files compressed with '-c'.
-   - Use '-df' only for folders compressed with '-cf'.
-
+Acknowledgments
+A special thanks to my friends for the valuable suggestions and debugging support, and to the Gemini and chatgpt that acted as a pair-programmer to help navigate the complexities of cloud deployment, Express server environments, and Linux cross-compilation.
         </p>
 
         <h3 style="color: #334155; margin-top: 25px;">Core Features</h3>
