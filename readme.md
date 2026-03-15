@@ -54,7 +54,7 @@ This engine uses Huffman Coding, which excels at finding repeating patterns in r
 
 Building a native C++ executable that communicates flawlessly with a cloud-deployed Node.js backend was a massive undertaking. I want to extend a massive thank you to:
 
-*Abhiraj Singh:Thank you for the support, suggestions that kept this project moving forward.
+*Abhiraj Singh:Thank you for the support, suggestions that kept this project moving forward.                                               
 *Gemini and Chatgpt: For acting as a pair-programmer, helping to untangle Linux cloud permissions, navigating Express server crashes, and making the deployment process a seamless learning experience.
 
 ---
